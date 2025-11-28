@@ -3,27 +3,37 @@ import { NavLink, Outlet } from "react-router-dom";
 const navItems = [
   { to: "/", label: "首页" },
   { to: "/room-control", label: "房间控制" },
-  { to: "/checkin", label: "办理入住" },
-  { to: "/checkout", label: "办理退房" },
+  { to: "/frontdesk", label: "前台服务" },
   { to: "/monitor", label: "监控面板" },
   { to: "/report", label: "统计报表" },
 ];
 
 function App() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white via-slate-50 to-white text-gray-900">
-      <header className="sticky top-0 z-10 border-b border-white/70 bg-white/80 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <span className="text-xl font-semibold tracking-tight">中央空调计费控制台</span>
-          <nav className="flex gap-4 text-sm font-medium">
+    <div className="min-h-screen bg-[#fbfbfd]">
+      {/* Apple 风格导航栏 */}
+      <header className="sticky top-0 z-50 glass border-b border-black/[0.04]">
+        <div className="mx-auto flex h-12 max-w-[1200px] items-center justify-between px-6">
+          {/* Logo */}
+          <NavLink to="/" className="flex items-center gap-2.5 group">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#1d1d1f] transition-transform group-hover:scale-105">
+              <span className="text-xs text-white">❄️</span>
+            </div>
+            <span className="text-sm font-semibold tracking-tight text-[#1d1d1f]">AC System</span>
+          </NavLink>
+
+          {/* 导航链接 */}
+          <nav className="flex items-center gap-1">
             {navItems.map((item) => (
               <NavLink
                 key={item.to}
                 to={item.to}
                 className={({ isActive }) =>
                   [
-                    "rounded-full px-4 py-2 transition-all hover:bg-gray-100",
-                    isActive ? "bg-gray-900 text-white shadow-sm" : "text-gray-500",
+                    "px-4 py-1.5 text-xs font-medium transition-all duration-200 rounded-full",
+                    isActive 
+                      ? "bg-[#1d1d1f] text-white" 
+                      : "text-[#1d1d1f]/60 hover:text-[#1d1d1f] hover:bg-black/[0.04]",
                   ].join(" ")
                 }
               >
@@ -33,9 +43,20 @@ function App() {
           </nav>
         </div>
       </header>
-      <main className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-6 py-12">
+
+      {/* 主内容区 - 大面积留白 */}
+      <main className="mx-auto w-full max-w-[1200px] px-6 py-16">
         <Outlet />
       </main>
+
+      {/* 极简页脚 */}
+      <footer className="border-t border-black/[0.04] py-8">
+        <div className="mx-auto max-w-[1200px] px-6">
+          <p className="text-center text-xs text-[#86868b]">
+            Software Engineering · Central AC Billing System · 2025
+          </p>
+        </div>
+      </footer>
     </div>
   );
 }

@@ -29,10 +29,19 @@ router = APIRouter(tags=["frontdesk"])
 
 
 class CheckInRequest(BaseModel):
-    roomId: str = Field(..., alias="roomId")
-    customerName: str
-    nights: int = Field(..., ge=1)
-    deposit: float = Field(0.0, ge=0.0)
+    """
+    对应 SSD 系统事件序列：
+    1. Registe_CustomerInfo(Cust_Id, Cust_name, number, date)
+    2. Check_RoomState(date) - 前端房间选择器实现
+    3. Create_Accommodation_Order(Customer_id, Room_id)
+    4. deposite(amount) - 可选
+    """
+    custId: str = Field(..., description="Cust_Id - 顾客身份证号")
+    custName: str = Field(..., description="Cust_name - 顾客姓名")
+    guestCount: int = Field(1, ge=1, description="number - 入住人数")
+    checkInDate: str = Field(..., description="date - 入住日期")
+    roomId: str = Field(..., description="Room_id - 房间号")
+    deposit: float = Field(0.0, ge=0.0, description="amount - 押金（可选）")
 
 
 class CheckOutRequest(BaseModel):
@@ -64,6 +73,13 @@ def _get_or_create_room(room_id: str) -> Room:
 
 @router.post("/checkin")
 def check_in(payload: CheckInRequest) -> Dict[str, Any]:
+    """
+    办理入住登记，对应 SSD 系统事件序列：
+    1. Registe_CustomerInfo(Cust_Id, Cust_name, number, date)
+    2. Check_RoomState(date) - 前端已验证房间状态
+    3. Create_Accommodation_Order(Customer_id, Room_id)
+    4. deposite(amount) - 记录押金
+    """
     room = _get_or_create_room(payload.roomId)
     scheduler.cancel_request(payload.roomId)
     billing_service.close_current_detail_record(payload.roomId, datetime.utcnow())
@@ -78,24 +94,36 @@ def check_in(payload: CheckInRequest) -> Dict[str, Any]:
     room.status = RoomStatus.OCCUPIED
     repository.save_room(room)
 
+    # 解析入住日期
+    try:
+        check_in_time = datetime.fromisoformat(payload.checkInDate.replace('Z', '+00:00'))
+    except ValueError:
+        check_in_time = datetime.utcnow()
+
     order_id = str(uuid4())
+    # Create_Accommodation_Order(Customer_id, Room_id) + deposite(amount)
     repository.add_accommodation_order(
         {
             "order_id": order_id,
             "room_id": payload.roomId,
-            "customer_name": payload.customerName,
-            "nights": payload.nights,
-            "deposit": payload.deposit,
-            "check_in_at": datetime.utcnow(),
+            "customer_id": payload.custId,      # Cust_Id
+            "customer_name": payload.custName,   # Cust_name
+            "guest_count": payload.guestCount,   # number - 入住人数
+            "nights": 1,  # 默认1晚，退房时按实际计算
+            "deposit": payload.deposit,          # amount - 押金
+            "check_in_at": check_in_time,
         }
     )
 
     return {
         "orderId": order_id,
         "roomId": payload.roomId,
-        "initialTemp": initial_temp,
-        "nights": payload.nights,
+        "custId": payload.custId,
+        "custName": payload.custName,
+        "guestCount": payload.guestCount,
+        "checkInDate": check_in_time.isoformat(),
         "deposit": payload.deposit,
+        "initialTemp": initial_temp,
         "status": "CHECKED_IN",
     }
 

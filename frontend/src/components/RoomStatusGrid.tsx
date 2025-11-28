@@ -1,76 +1,97 @@
 ﻿import type { RoomStatus } from "../types/rooms";
 
-const statusCopy: Record<string, { label: string; tone: string }> = {
-  serving: { label: "服务中", tone: "bg-emerald-50 text-emerald-700 border-emerald-200" },
-  waiting: { label: "等待中", tone: "bg-amber-50 text-amber-700 border-amber-200" },
-  occupied: { label: "已入住", tone: "bg-indigo-50 text-indigo-700 border-indigo-200" },
+type RoomStatusGridProps = {
+  rooms: RoomStatus[];
+  onRoomClick?: (room: RoomStatus) => void;
 };
 
-export function RoomStatusGrid({ rooms }: { rooms: RoomStatus[] }) {
+const statusConfig: Record<string, { label: string; color: string; bg: string }> = {
+  serving: { label: "服务中", color: "text-[#34c759]", bg: "bg-[#34c759]/10" },
+  waiting: { label: "等待中", color: "text-[#ff9500]", bg: "bg-[#ff9500]/10" },
+  occupied: { label: "已入住", color: "text-[#0071e3]", bg: "bg-[#0071e3]/10" },
+};
+
+export function RoomStatusGrid({ rooms, onRoomClick }: RoomStatusGridProps) {
   return (
-    <section className="rounded-3xl border border-slate-200 bg-white/80 p-6 shadow-sm">
+    <section className="rounded-2xl border border-black/[0.04] bg-white p-6">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-2xl font-semibold text-slate-900">房间运行态势</h3>
-          <p className="text-sm text-slate-500">仅展示在住或存在调度请求的房间</p>
+          <h3 className="text-xl font-semibold text-[#1d1d1f]">房间状态</h3>
+          <p className="mt-1 text-xs text-[#86868b]">仅展示活跃房间</p>
         </div>
-        <span className="text-xs uppercase tracking-[0.4em] text-slate-400">Auto Refresh</span>
+        <div className="flex items-center gap-2 text-[10px] text-[#86868b]">
+          <span className="h-1.5 w-1.5 rounded-full bg-[#34c759]" />
+          实时刷新
+        </div>
       </div>
 
       {rooms.length === 0 ? (
-        <div className="mt-6 rounded-2xl border border-dashed border-slate-200 bg-slate-50/60 px-4 py-6 text-center text-sm text-slate-500">
-          暂无在住客房或调度请求。
+        <div className="mt-8 rounded-xl bg-[#f5f5f7] py-12 text-center">
+          <p className="text-sm text-[#86868b]">暂无活跃房间</p>
         </div>
       ) : (
-        <div className="mt-6 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+        <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {rooms.map((room) => {
-            const key = room.status?.toLowerCase?.() ?? "";
-            const tone = statusCopy[key] ?? statusCopy.occupied;
+            const key = room.status?.toLowerCase?.() ?? "occupied";
+            const config = statusConfig[key] ?? statusConfig.occupied;
             const diff = Number((room.currentTemp - room.targetTemp).toFixed(1));
+            
+            const clickable = Boolean(onRoomClick);
+
             return (
               <article
                 key={room.roomId}
-                className="group rounded-3xl border border-slate-100 bg-gradient-to-br from-white to-slate-50/80 p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
+                className={`group rounded-xl border border-black/[0.04] bg-white p-5 transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 ${
+                  clickable ? "cursor-pointer" : ""
+                }`}
+                onClick={clickable ? () => onRoomClick?.(room) : undefined}
               >
-                <div className="flex items-center justify-between">
+                {/* 头部 */}
+                <div className="flex items-start justify-between">
                   <div>
-                    <p className="text-xs uppercase tracking-[0.4em] text-slate-400">房间 #{room.roomId}</p>
-                    <h4 className="text-xl font-semibold text-slate-900">{tone.label}</h4>
+                    <p className="text-xs text-[#86868b]">房间</p>
+                    <p className="text-2xl font-semibold text-[#1d1d1f]">#{room.roomId}</p>
                   </div>
-                  <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${tone.tone}`}>{room.speed ?? "--"}</span>
+                  <span className={`rounded-full px-3 py-1 text-xs font-medium ${config.bg} ${config.color}`}>
+                    {config.label}
+                  </span>
                 </div>
-                <div className="mt-4 flex items-end justify-between">
+                
+                {/* 温度显示 */}
+                <div className="mt-5 flex items-end justify-between">
                   <div>
-                    <p className="text-sm text-slate-500">当前温度</p>
-                    <p className="text-3xl font-semibold text-slate-900">{room.currentTemp.toFixed(1)}℃</p>
+                    <p className="text-xs text-[#86868b]">当前</p>
+                    <p className="text-3xl font-semibold text-[#1d1d1f] tracking-tight">
+                      {room.currentTemp.toFixed(1)}°
+                    </p>
                   </div>
                   <div className="text-right">
-                    <p className="text-sm text-slate-500">目标</p>
-                    <p className="text-xl font-semibold text-slate-900">{room.targetTemp.toFixed(1)}℃</p>
-                    <p className="text-xs text-slate-500">偏差 {diff > 0 ? `+${diff}` : diff}℃</p>
+                    <p className="text-xs text-[#86868b]">目标</p>
+                    <p className="text-xl text-[#86868b]">{room.targetTemp.toFixed(1)}°</p>
+                    <p className={`text-xs ${Math.abs(diff) <= 0.5 ? 'text-[#34c759]' : 'text-[#ff9500]'}`}>
+                      {diff > 0 ? `+${diff}` : diff}°
+                    </p>
                   </div>
                 </div>
-                <dl className="mt-4 grid grid-cols-2 gap-3 text-sm text-slate-600">
+                
+                {/* 详细信息 */}
+                <div className="mt-5 grid grid-cols-2 gap-4 border-t border-black/[0.04] pt-4">
                   <div>
-                    <dt className="text-slate-400">本次费用</dt>
-                    <dd className="font-semibold text-slate-900">¥{room.currentFee.toFixed(2)}</dd>
+                    <p className="text-[10px] text-[#86868b]">本次费用</p>
+                    <p className="text-sm font-semibold text-[#1d1d1f]">¥{room.currentFee.toFixed(2)}</p>
                   </div>
                   <div>
-                    <dt className="text-slate-400">累计费用</dt>
-                    <dd className="font-semibold text-slate-900">¥{room.totalFee.toFixed(2)}</dd>
+                    <p className="text-[10px] text-[#86868b]">累计费用</p>
+                    <p className="text-sm font-semibold text-[#1d1d1f]">¥{room.totalFee.toFixed(2)}</p>
                   </div>
                   <div>
-                    <dt className="text-slate-400">服务时长</dt>
-                    <dd>{room.servedSeconds}s</dd>
+                    <p className="text-[10px] text-[#86868b]">风速</p>
+                    <p className="text-sm text-[#1d1d1f]">{room.speed ?? "--"}</p>
                   </div>
                   <div>
-                    <dt className="text-slate-400">等待时长</dt>
-                    <dd>{room.waitedSeconds}s</dd>
+                    <p className="text-[10px] text-[#86868b]">服务时长</p>
+                    <p className="text-sm text-[#1d1d1f]">{room.servedSeconds}s</p>
                   </div>
-                </dl>
-                <div className="mt-4 flex items-center justify-between text-xs text-slate-500">
-                  <span>服务中：{room.isServing ? "是" : "否"}</span>
-                  <span>等待中：{room.isWaiting ? "是" : "否"}</span>
                 </div>
               </article>
             );

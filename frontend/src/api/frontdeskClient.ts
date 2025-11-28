@@ -1,18 +1,28 @@
 import { http, type ApiResult } from "./client";
 
+// 对应 SSD 系统事件：
+// 1. Registe_CustomerInfo(Cust_Id, Cust_name, number, date)
+// 2. Check_RoomState(date)
+// 3. Create_Accommodation_Order(Customer_id, Room_id)
+// 4. deposite(amount) - 可选
 export type CheckInPayload = {
-  customerName: string;
-  roomId: string;
-  nights: number;
-  deposit: number;
+  custId: string;        // Cust_Id - 身份证号
+  custName: string;      // Cust_name - 顾客姓名
+  guestCount: number;    // number - 入住人数
+  checkInDate: string;   // date - 入住日期
+  roomId: string;        // Room_id - 房间号
+  deposit: number;       // amount - 押金（可选）
 };
 
 export type CheckInResponse = {
   orderId: string;
   roomId: string;
-  initialTemp: number;
-  nights: number;
+  custId: string;
+  custName: string;
+  guestCount: number;
+  checkInDate: string;
   deposit: number;
+  initialTemp: number;
   status: string;
 };
 

@@ -4,8 +4,7 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import App from "./App.tsx";
 import "./index.css";
 import {
-  CheckInPage,
-  CheckOutPage,
+  FrontDeskPage,
   Home,
   MonitorPage,
   ReportPage,
@@ -21,8 +20,7 @@ const router = createBrowserRouter([
       { index: true, element: <Home /> },
       { path: "room-control", element: <RoomSelectorPage /> },
       { path: "room-control/:roomId", element: <RoomControlPage /> },
-      { path: "checkin", element: <CheckInPage /> },
-      { path: "checkout", element: <CheckOutPage /> },
+      { path: "frontdesk", element: <FrontDeskPage /> },
       { path: "monitor", element: <MonitorPage /> },
       { path: "report", element: <ReportPage /> },
     ],

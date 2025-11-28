@@ -71,40 +71,10 @@ export function ReportPage() {
 
   const summaryCards = report
     ? [
-        {
-          title: "总收入",
-          value: currencyFormatter.format(report.summary.totalRevenue),
-          subtitle: "统计区间内累计收入",
-          icon: "🧾",
-        },
-        {
-          title: "空调收入",
-          value: currencyFormatter.format(report.summary.acRevenue),
-          subtitle: "空调费用按详单聚合",
-          icon: "❄️",
-        },
-        {
-          title: "房费收入",
-          value: currencyFormatter.format(report.summary.roomRevenue),
-          subtitle: "住宿账单累积",
-          icon: "🏨",
-        },
-        {
-          title: "总耗电量",
-          value: `${numberFormatter.format(report.summary.totalKwh)} kWh`,
-          subtitle: "详单能耗换算",
-          icon: "🔌",
-        },
-      ]
-    : [];
-
-  const kpiCards = report
-    ? [
-        { label: "平均单房耗电", value: `${numberFormatter.format(report.kpi.avgKwh)} kWh/room` },
-        { label: "平均单房空调费", value: currencyFormatter.format(report.kpi.avgFee) },
-        { label: "峰值时段", value: report.kpi.peakHour ?? "--" },
-        { label: "高风请求占比", value: `${(report.kpi.highRate * 100).toFixed(1)}%` },
-        { label: "平均会话时长", value: `${numberFormatter.format(report.kpi.avgSession)} min` },
+        { title: "总收入", value: currencyFormatter.format(report.summary.totalRevenue) },
+        { title: "空调收入", value: currencyFormatter.format(report.summary.acRevenue) },
+        { title: "房费收入", value: currencyFormatter.format(report.summary.roomRevenue) },
+        { title: "总耗电", value: `${numberFormatter.format(report.summary.totalKwh)} kWh` },
       ]
     : [];
 
@@ -114,19 +84,19 @@ export function ReportPage() {
       {
         label: "费用 (¥)",
         data: trendData.map((item) => item.fee),
-        borderColor: "#6366f1",
-        backgroundColor: "rgba(99,102,241,0.15)",
+        borderColor: "#1d1d1f",
+        backgroundColor: "rgba(29,29,31,0.05)",
         fill: true,
-        tension: 0.35,
+        tension: 0.4,
         yAxisID: "y",
       },
       {
         label: "耗电量 (kWh)",
         data: trendData.map((item) => item.kwh),
-        borderColor: "#14b8a6",
-        backgroundColor: "rgba(20,184,166,0.15)",
+        borderColor: "#86868b",
+        backgroundColor: "rgba(134,134,139,0.05)",
         fill: true,
-        tension: 0.35,
+        tension: 0.4,
         yAxisID: "y1",
       },
     ],
@@ -137,8 +107,8 @@ export function ReportPage() {
     datasets: [
       {
         data: [speedRate.high, speedRate.mid, speedRate.low],
-        backgroundColor: ["#ef4444", "#3b82f6", "#22c55e"],
-        hoverOffset: 6,
+        backgroundColor: ["#1d1d1f", "#86868b", "#d1d1d6"],
+        hoverOffset: 4,
       },
     ],
   };
@@ -149,137 +119,124 @@ export function ReportPage() {
       {
         label: "空调费用 (¥)",
         data: topRooms.map((room) => room.fee),
-        backgroundColor: "rgba(99,102,241,0.8)",
-        borderRadius: 8,
-      },
-    ],
-  };
-
-  const hourlyStackedData = {
-    labels: report?.hourlySpeed.map((item) => item.hour) ?? [],
-    datasets: [
-      {
-        label: "高风",
-        data: report?.hourlySpeed.map((item) => item.high) ?? [],
-        backgroundColor: "rgba(239,68,68,0.85)",
-        stack: "speed",
-      },
-      {
-        label: "中风",
-        data: report?.hourlySpeed.map((item) => item.mid) ?? [],
-        backgroundColor: "rgba(59,130,246,0.85)",
-        stack: "speed",
-      },
-      {
-        label: "低风",
-        data: report?.hourlySpeed.map((item) => item.low) ?? [],
-        backgroundColor: "rgba(34,197,94,0.85)",
-        stack: "speed",
+        backgroundColor: "#1d1d1f",
+        borderRadius: 4,
       },
     ],
   };
 
   return (
-    <section className="space-y-8">
-      <header className="space-y-2">
-        <p className="text-xs uppercase tracking-[0.4em] text-slate-400">Hotel AC Dashboard</p>
-        <h2 className="text-4xl font-semibold">空调统计报表</h2>
-        <p className="text-sm text-slate-500">按时间区间洞察收入、能耗、风速结构与房间表现。</p>
+    <div className="space-y-10 animate-fade-in">
+      {/* 页面标题 */}
+      <header className="text-center">
+        <h1 className="text-4xl font-semibold tracking-tight text-[#1d1d1f]">
+          统计报表
+        </h1>
+        <p className="mt-3 text-[#86868b]">收入、能耗与使用分析</p>
       </header>
 
-      <div className="rounded-3xl border border-slate-200 bg-white/80 p-6 shadow-sm">
+      {/* 时间筛选 */}
+      <div className="rounded-2xl border border-black/[0.04] bg-white p-6">
         <div className="grid gap-4 md:grid-cols-2">
-          <label className="text-sm text-slate-600">
-            开始时间
-            <input className="mt-1 w-full rounded-2xl border border-slate-200 px-3 py-2" type="datetime-local" value={fromValue} onChange={(e) => setFromValue(e.target.value)} />
+          <label className="block">
+            <span className="text-xs text-[#86868b]">开始时间</span>
+            <input 
+              className="mt-2 w-full rounded-xl border border-black/[0.08] bg-[#f5f5f7] px-4 py-3 text-sm text-[#1d1d1f]" 
+              type="datetime-local" 
+              value={fromValue} 
+              onChange={(e) => setFromValue(e.target.value)} 
+            />
           </label>
-          <label className="text-sm text-slate-600">
-            结束时间
-            <input className="mt-1 w-full rounded-2xl border border-slate-200 px-3 py-2" type="datetime-local" value={toValue} onChange={(e) => setToValue(e.target.value)} />
+          <label className="block">
+            <span className="text-xs text-[#86868b]">结束时间</span>
+            <input 
+              className="mt-2 w-full rounded-xl border border-black/[0.08] bg-[#f5f5f7] px-4 py-3 text-sm text-[#1d1d1f]" 
+              type="datetime-local" 
+              value={toValue} 
+              onChange={(e) => setToValue(e.target.value)} 
+            />
           </label>
         </div>
-        <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-          <div className="text-xs text-slate-500">最后更新：{lastUpdated ? lastUpdated.toLocaleString() : "--"}</div>
+        <div className="mt-4 flex items-center justify-between">
+          <span className="text-xs text-[#86868b]">
+            更新于 {lastUpdated ? lastUpdated.toLocaleString() : "--"}
+          </span>
           <button
-            className="inline-flex items-center rounded-full bg-gradient-to-r from-indigo-500 to-blue-500 px-6 py-2 text-sm font-semibold text-white shadow-sm transition hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60"
+            className="rounded-full bg-[#0071e3] px-6 py-2 text-sm font-medium text-white transition-all hover:bg-[#0077ed] active:scale-[0.98] disabled:opacity-50"
             type="button"
             onClick={loadReport}
             disabled={loading}
           >
-            {loading ? "刷新中..." : "刷新报表"}
+            {loading ? "加载中..." : "刷新"}
           </button>
         </div>
       </div>
 
-      {error && <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 shadow-sm">{error}</div>}
+      {error && (
+        <div className="rounded-xl bg-[#ff3b30]/10 px-4 py-3 text-sm text-[#ff3b30]">{error}</div>
+      )}
 
       {report ? (
         <div className="space-y-8">
-          {/* Summary cards */}
+          {/* 摘要卡片 */}
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             {summaryCards.map((card) => (
-              <article key={card.title} className="rounded-3xl border border-slate-200 bg-white/90 p-5 shadow-sm">
-                <div className="flex items-center justify-between">
-                  <p className="text-sm text-slate-500">{card.title}</p>
-                  <span className="text-lg">{card.icon}</span>
-                </div>
-                <p className="mt-3 text-3xl font-semibold text-slate-900">{card.value}</p>
-                <p className="text-xs text-slate-500">{card.subtitle}</p>
-              </article>
+              <div key={card.title} className="rounded-2xl bg-[#f5f5f7] p-6">
+                <p className="text-xs text-[#86868b]">{card.title}</p>
+                <p className="mt-2 text-3xl font-semibold tracking-tight text-[#1d1d1f]">{card.value}</p>
+              </div>
             ))}
           </div>
 
-          {/* Trend + pie */}
+          {/* 趋势 + 饼图 */}
           <div className="grid gap-6 lg:grid-cols-3">
-            <article className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm lg:col-span-2">
-              <div className="flex items-center justify-between">
+            <div className="rounded-2xl border border-black/[0.04] bg-white p-6 lg:col-span-2">
+              <div className="flex items-center justify-between mb-4">
                 <div>
-                  <h3 className="text-xl font-semibold">空调运行趋势</h3>
-                  <p className="text-sm text-slate-500">费用与能耗走势</p>
+                  <h3 className="text-lg font-semibold text-[#1d1d1f]">趋势分析</h3>
+                  <p className="text-xs text-[#86868b]">费用与能耗变化</p>
                 </div>
-                <div className="rounded-full border border-slate-200 p-1 text-xs">
+                <div className="inline-flex rounded-full bg-[#f5f5f7] p-1">
                   {["hour", "day"].map((mode) => (
                     <button
                       key={mode}
-                      className={`rounded-full px-3 py-1 font-medium transition ${trendMode === mode ? "bg-indigo-500 text-white" : "text-slate-500"}`}
+                      className={`rounded-full px-3 py-1 text-xs font-medium transition ${trendMode === mode ? "bg-white text-[#1d1d1f] shadow-sm" : "text-[#86868b]"}`}
                       onClick={() => setTrendMode(mode as "hour" | "day")}
                       type="button"
                     >
-                      {mode === "hour" ? "按小时" : "按天"}
+                      {mode === "hour" ? "按时" : "按天"}
                     </button>
                   ))}
                 </div>
               </div>
               {trendData.length > 0 ? (
-                <div className="mt-4">
-                  <Line
-                    data={lineChartData}
-                    options={{
-                      responsive: true,
-                      interaction: { mode: "index", intersect: false },
-                      stacked: false,
-                      plugins: { legend: { position: "bottom" } },
-                      scales: {
-                        y: { title: { display: true, text: "费用 (¥)" } },
-                        y1: { position: "right", grid: { drawOnChartArea: false }, title: { display: true, text: "耗电 (kWh)" } },
-                      },
-                    }}
-                  />
-                </div>
+                <Line
+                  data={lineChartData}
+                  options={{
+                    responsive: true,
+                    interaction: { mode: "index", intersect: false },
+                    plugins: { legend: { position: "bottom", labels: { usePointStyle: true } } },
+                    scales: {
+                      y: { title: { display: true, text: "费用 (¥)" }, grid: { color: "rgba(0,0,0,0.04)" } },
+                      y1: { position: "right", grid: { drawOnChartArea: false }, title: { display: true, text: "耗电 (kWh)" } },
+                    },
+                  }}
+                />
               ) : (
-                <p className="mt-6 text-center text-sm text-slate-500">暂无趋势数据</p>
+                <p className="text-center text-sm text-[#86868b] py-8">暂无数据</p>
               )}
-            </article>
-            <article className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-              <h3 className="text-xl font-semibold">风速占比</h3>
-              <p className="text-sm text-slate-500">高/中/低风时长占比</p>
+            </div>
+            
+            <div className="rounded-2xl border border-black/[0.04] bg-white p-6">
+              <h3 className="text-lg font-semibold text-[#1d1d1f]">风速占比</h3>
+              <p className="text-xs text-[#86868b]">使用时长分布</p>
               {speedRate.high + speedRate.mid + speedRate.low > 0 ? (
                 <div className="mt-4">
                   <Pie
                     data={pieChartData}
                     options={{
                       plugins: {
-                        legend: { position: "bottom" },
+                        legend: { position: "bottom", labels: { usePointStyle: true } },
                         tooltip: {
                           callbacks: {
                             label: (ctx: TooltipItem<"pie">) => {
@@ -293,70 +250,69 @@ export function ReportPage() {
                   />
                 </div>
               ) : (
-                <p className="mt-6 text-center text-sm text-slate-500">暂无风速数据</p>
+                <p className="text-center text-sm text-[#86868b] py-8">暂无数据</p>
               )}
-            </article>
+            </div>
           </div>
 
-          {/* Room breakdown + bar chart */}
+          {/* 房间表格 + TOP10 */}
           <div className="grid gap-6 lg:grid-cols-3">
-            <article className="rounded-3xl border border-slate-200 bg-white p-0 shadow-sm lg:col-span-2">
-              <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
+            <div className="rounded-2xl border border-black/[0.04] bg-white lg:col-span-2">
+              <div className="flex items-center justify-between border-b border-black/[0.04] px-6 py-4">
                 <div>
-                  <h3 className="text-xl font-semibold">房间表现</h3>
-                  <p className="text-sm text-slate-500">按空调费用降序 · 页 {page + 1}/{totalPages}</p>
+                  <h3 className="text-lg font-semibold text-[#1d1d1f]">房间明细</h3>
+                  <p className="text-xs text-[#86868b]">按费用排序 · 第 {page + 1}/{totalPages} 页</p>
                 </div>
-                <div className="flex items-center gap-2 text-sm text-slate-600">
-                  <button className="rounded-full border border-slate-200 px-3 py-1 disabled:opacity-40" type="button" disabled={page === 0} onClick={() => setPage((p) => Math.max(p - 1, 0))}>
+                <div className="flex items-center gap-2">
+                  <button 
+                    className="rounded-lg border border-black/[0.08] px-3 py-1 text-xs disabled:opacity-30" 
+                    disabled={page === 0} 
+                    onClick={() => setPage((p) => Math.max(p - 1, 0))}
+                    type="button"
+                  >
                     上一页
                   </button>
-                  <button className="rounded-full border border-slate-200 px-3 py-1 disabled:opacity-40" type="button" disabled={page >= totalPages - 1} onClick={() => setPage((p) => Math.min(p + 1, totalPages - 1))}>
+                  <button 
+                    className="rounded-lg border border-black/[0.08] px-3 py-1 text-xs disabled:opacity-30" 
+                    disabled={page >= totalPages - 1} 
+                    onClick={() => setPage((p) => Math.min(p + 1, totalPages - 1))}
+                    type="button"
+                  >
                     下一页
                   </button>
                 </div>
               </div>
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-slate-100 text-sm">
-                  <thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
+                <table className="w-full text-sm">
+                  <thead className="bg-[#f5f5f7] text-xs text-[#86868b]">
                     <tr>
-                      <th className="px-4 py-3">房间号</th>
-                      <th className="px-4 py-3">使用时长 (min)</th>
-                      <th className="px-4 py-3">高风次数</th>
-                      <th className="px-4 py-3">中风次数</th>
-                      <th className="px-4 py-3">低风次数</th>
-                      <th className="px-4 py-3">耗电量 (kWh)</th>
-                      <th className="px-4 py-3">空调费用 (¥)</th>
+                      <th className="px-4 py-3 text-left">房间</th>
+                      <th className="px-4 py-3 text-left">时长</th>
+                      <th className="px-4 py-3 text-left">高/中/低</th>
+                      <th className="px-4 py-3 text-left">耗电</th>
+                      <th className="px-4 py-3 text-right">费用</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 bg-white">
+                  <tbody className="divide-y divide-black/[0.04]">
                     {pagedRooms.length === 0 && (
-                      <tr>
-                        <td className="px-4 py-6 text-center text-slate-500" colSpan={7}>
-                          暂无房间数据
-                        </td>
-                      </tr>
+                      <tr><td className="px-4 py-6 text-center text-[#86868b]" colSpan={5}>暂无数据</td></tr>
                     )}
                     {pagedRooms.map((room) => (
-                      <tr key={room.roomId} className="transition hover:bg-slate-50">
-                        <td className="px-4 py-3 font-semibold text-slate-900">#{room.roomId}</td>
-                        <td className="px-4 py-3">{numberFormatter.format(room.minutes)}</td>
-                        <td className="px-4 py-3">{room.highCount}</td>
-                        <td className="px-4 py-3">{room.midCount}</td>
-                        <td className="px-4 py-3">{room.lowCount}</td>
-                        <td className="px-4 py-3">{numberFormatter.format(room.kwh)}</td>
-                        <td className="px-4 py-3">
-                          <span className="rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-red-600">
-                            {currencyFormatter.format(room.fee)}
-                          </span>
-                        </td>
+                      <tr key={room.roomId} className="hover:bg-[#f5f5f7]/50 transition-colors">
+                        <td className="px-4 py-3 font-semibold text-[#1d1d1f]">#{room.roomId}</td>
+                        <td className="px-4 py-3 text-[#86868b]">{numberFormatter.format(room.minutes)} min</td>
+                        <td className="px-4 py-3 text-[#86868b]">{room.highCount}/{room.midCount}/{room.lowCount}</td>
+                        <td className="px-4 py-3 text-[#86868b]">{numberFormatter.format(room.kwh)} kWh</td>
+                        <td className="px-4 py-3 text-right font-semibold text-[#1d1d1f]">{currencyFormatter.format(room.fee)}</td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
-            </article>
-            <article className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-              <h3 className="text-xl font-semibold">房间费用 TOP10</h3>
+            </div>
+            
+            <div className="rounded-2xl border border-black/[0.04] bg-white p-6">
+              <h3 className="text-lg font-semibold text-[#1d1d1f]">费用 TOP10</h3>
               {topRooms.length > 0 ? (
                 <div className="mt-4">
                   <Bar
@@ -364,54 +320,24 @@ export function ReportPage() {
                     options={{
                       indexAxis: "y" as const,
                       plugins: { legend: { display: false } },
-                      scales: { x: { beginAtZero: true } },
+                      scales: { 
+                        x: { beginAtZero: true, grid: { color: "rgba(0,0,0,0.04)" } },
+                        y: { grid: { display: false } }
+                      },
                     }}
                   />
                 </div>
               ) : (
-                <p className="mt-6 text-center text-sm text-slate-500">暂无房间排行</p>
+                <p className="text-center text-sm text-[#86868b] py-8">暂无数据</p>
               )}
-            </article>
-          </div>
-
-          {/* Hourly stacked */}
-          <article className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-            <h3 className="text-xl font-semibold">使用结构分析</h3>
-            <p className="text-sm text-slate-500">按小时堆叠高/中/低风分钟数</p>
-            {report.hourlySpeed.length > 0 ? (
-              <div className="mt-4">
-                <Bar
-                  data={hourlyStackedData}
-                  options={{
-                    responsive: true,
-                    plugins: { legend: { position: "bottom" } },
-                    scales: {
-                      x: { stacked: true },
-                      y: { stacked: true, title: { display: true, text: "分钟" } },
-                    },
-                  }}
-                />
-              </div>
-            ) : (
-              <p className="mt-6 text-center text-sm text-slate-500">暂无堆叠数据</p>
-            )}
-          </article>
-
-          {/* KPI cards */}
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
-            {kpiCards.map((kpi) => (
-              <article key={kpi.label} className="rounded-2xl border border-slate-100 bg-white/90 p-4 text-sm shadow-sm">
-                <p className="text-slate-500">{kpi.label}</p>
-                <p className="mt-2 text-xl font-semibold text-slate-900">{kpi.value}</p>
-              </article>
-            ))}
+            </div>
           </div>
         </div>
       ) : (
-        <div className="rounded-3xl border border-dashed border-slate-200 bg-slate-50/70 p-10 text-center text-sm text-slate-500">
-          暂无报表数据，请调整时间范围后刷新。
+        <div className="rounded-2xl bg-[#f5f5f7] py-16 text-center">
+          <p className="text-sm text-[#86868b]">调整时间范围后点击刷新</p>
         </div>
       )}
-    </section>
+    </div>
   );
 }
